@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Acesso VPS</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:sans-serif;text-align:center;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(circle at 50% 35%, #1c1c38 0%, #000 85%);
+  filter:blur(14px) brightness(.55);
+  transform:scale(1.15);
+}
+#titulo{font-size:15px;color:rgba(255,255,255,0.7);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px}
+#d{font-size:34px;letter-spacing:10px;margin:18px 0 10px;min-height:44px;color:#00ffcc}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px;max-width:340px;margin:0 auto;width:88%}
+button{
+  font-size:24px;padding:18px;border:0;border-radius:14px;color:#fff;
+  background:rgba(255,255,255,.14);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+  transition:background 0.12s, transform 0.1s;
+}
+button:active{background:rgba(255,255,255,.3);transform:scale(0.96)}
+button.confirmar{background:rgba(0,255,200,.22);border-color:rgba(0,255,200,.35);color:#00ffcc}
+button.confirmar:active{background:rgba(0,255,200,.42)}
+</style>
+</head>
+<body>
+<div id="titulo">Digite o PIN</div>
+<div id="d">&nbsp;</div>
+<div class="g" id="g"></div>
+<script>
+const tg = Telegram.WebApp;
+tg.ready();
+tg.expand();
+tg.setBackgroundColor("#000");
+tg.setHeaderColor("#000");
+
+let pin = "";
+const d = document.getElementById("d");
+const g = document.getElementById("g");
+
+const up = () => {
+  d.textContent = "•".repeat(pin.length) || "\u00a0";
+};
+
+const teclas = [
+  "1", "2", "3",
+  "4", "5", "6",
+  "7", "8", "9",
+  "⌫", "0", "✓"
+];
+
+teclas.forEach(t => {
+  const btn = document.createElement("button");
+  btn.textContent = t;
+  if (t === "✓") btn.className = "confirmar";
+  btn.onclick = () => {
+    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+    if (t === "⌫") {
+      pin = pin.slice(0, -1);
+      up();
+    } else if (t === "✓") {
+      if (pin.length > 0) {
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        tg.sendData(JSON.stringify({ pin: pin }));
+        tg.close();
+      }
+    } else {
+      if (pin.length < 12) {
+        pin += t;
+        up();
+      }
+    }
+  };
+  g.appendChild(btn);
+});
+</script>
+</body>
+</html>
